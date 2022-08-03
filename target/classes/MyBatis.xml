@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--
+    根标签是configuration
+-->
+<configuration>
+
+    <properties resource="jdbc.properties"></properties>
+    <typeAliases>
+        <package name="zjw.pojo"/>
+    </typeAliases>
+    <!--数据源配置-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="UNPOOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.user}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+
+    <!--
+        指定加载哪些映射配置文件: mappers
+            mapper标签: 每一个mapper标签负责加载一个映射配置文件;resource指定要加载的映射配置文件的路径
+    -->
+    <mappers>
+        <package name="zjw.mapper"></package>
+    </mappers>
+</configuration>
