@@ -64,5 +64,14 @@ public class UpdateSchoolUtils {
         return map;
     }
 
+    public static void main(String[] args){
+//        try {
+//            update();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
+    }
 
 }
