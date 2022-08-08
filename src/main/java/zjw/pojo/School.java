@@ -1,8 +1,18 @@
 package zjw.pojo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
+/**
+ * @ClassName School
+ * @description 高校
+ * @author 郑洁文
+ * @date 2022年8月3日 下午14:00
+ * @Version v1.0
+ */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class School {
     //地址
     private String address;

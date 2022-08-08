@@ -12,11 +12,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class MyHttpClient {
 
-    public static void main(String[] args) throws IOException {
-        String html = fetchHtmlSync("http://47.108.249.189:8080/diary/java/43java/day43.html");
-        System.out.println(html);
-    }
-
     /**
      * okhttp客户端
      */
@@ -40,7 +35,7 @@ public class MyHttpClient {
      */
     public static String fetchHtmlSync(String url) throws IOException {
         try {
-            Thread.sleep(20);
+            Thread.sleep(5000);//没有ip代理，避免被封ip
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
