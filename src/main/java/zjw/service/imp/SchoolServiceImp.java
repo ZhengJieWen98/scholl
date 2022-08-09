@@ -6,6 +6,8 @@ import zjw.pojo.School;
 import zjw.service.SchoolService;
 import zjw.utils.SqlSessionFactoryUtil;
 
+import java.util.List;
+
 public class SchoolServiceImp implements SchoolService {
     /**
      * @Title addSchool
@@ -20,5 +22,18 @@ public class SchoolServiceImp implements SchoolService {
         int i = mapper.addSchool(school);
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return i;
+    }
+
+    /**
+     * @Title findAllSchoolId
+     * @description 查询所有的school_id
+     * @author 郑洁文
+     * @date 2022年8月3日 下午14:16
+     * @return
+     */
+    public List<String> findAllSchoolId(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        SchoolMapper mapper = sqlSession.getMapper(SchoolMapper.class);
+        return mapper.findAllSchoolId();
     }
 }

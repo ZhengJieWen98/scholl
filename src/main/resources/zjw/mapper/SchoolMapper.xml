@@ -22,5 +22,9 @@
         values (#{name},#{nature_name},#{level_name},#{dual_class_name},#{belong},#{type_name},#{province_name},#{city_name},#{county_name},#{address},#{school_id})
     </insert>
 
+    <select id="findAllSchoolId" resultType="String">
+        select school_id from school
+    </select>
+
 
 </mapper>

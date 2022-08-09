@@ -1,29 +1,33 @@
 package zjw.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import zjw.pojo.Para;
 import zjw.pojo.School;
-import zjw.service.ParaService;
-import zjw.service.SchoolService;
-import zjw.service.imp.ParaServiceImp;
-import zjw.service.imp.SchoolServiceImp;
+import zjw.pojo.SchoolNews;
+import zjw.service.*;
+import zjw.service.imp.*;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UpdateSchoolUtils {
     private static ParaService paraService = new ParaServiceImp();
     private static SchoolService schoolService = new SchoolServiceImp();
+    private static SchoolNewsService schoolNewsService = new SchoolNewsServiceImp();
+    private static Para SchoolNewsUrlPara = null;
+
     /**
-     * @Title update
+     * @Title updateSchool
      * @description 更新高校信息
      * @author 郑洁文
      * @date 2022年8月8日 下午15:32
      */
-    public static void update() throws IOException {
+    public static void updateSchool() throws IOException {
         List<Para> paras = paraService.finaAllSchoolUrls();
         for(Para para:paras){
             /*
@@ -47,6 +51,37 @@ public class UpdateSchoolUtils {
         }
     }
 
+    /**
+     * @Title updateSchool
+     * @description 更新所有的高校信息
+     * @author 郑洁文
+     * @date 2022年8月8日 下午15:32
+     */
+    public static void updateSchoolNews() throws IOException {
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        for(int i=0;i<allSchoolId.size();i++){
+            updateSchoolNews(allSchoolId.get(i));
+        }
+    }
+
+    /**
+     * @Title updateSchool
+     * @description 更新高校信息
+     * @author 郑洁文
+     * @date 2022年8月8日 下午15:32
+     * @param school_id
+     */
+    public static void updateSchoolNews(String school_id) throws IOException {
+        schoolNewsService.deleteSchoolNews(school_id);
+        Map<String, String> mapUrl = analysisSchoolNewsUrl();
+        String url = mapUrl.get("urlStart")+school_id+mapUrl.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        Object data = jsonObject.get("data");
+        List<SchoolNews> schoolNews = JSON.parseArray(data.toString(), SchoolNews.class);
+        List<SchoolNews> news = schoolNews.stream().limit(10).collect(Collectors.toList());
+        schoolNewsService.addSchoolNews(news);
+    }
 
 
     /**
@@ -54,6 +89,7 @@ public class UpdateSchoolUtils {
      * @description 解析高校url地址
      * @author 郑洁文
      * @date 2022年8月8日 下午15:52
+     * @param schoolUrl
      */
     public static Map<String,String> analysisSchoolUrl(String schoolUrl){
         Map<String,String> map = new HashMap<String, String>();
@@ -64,14 +100,24 @@ public class UpdateSchoolUtils {
         return map;
     }
 
-    public static void main(String[] args){
-//        try {
-//            update();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
+    /**
+     * @Title analysisSchoolNewsUrl
+     * @description 解析高校高校招生快讯url地址
+     * @author 郑洁文
+     * @date 2022年8月9日 上午11:22
+     */
+    public static Map<String,String> analysisSchoolNewsUrl(){
+        if(SchoolNewsUrlPara==null){
+            SchoolNewsUrlPara = paraService.finaSchoolNewsUrl();
+        }
+        String paravalue = SchoolNewsUrlPara.getPARAVALUE();
+        String[] split = paravalue.split("school_id");
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("urlStart",split[0]);
+        map.put("urlEnd",split[1]);
+        return map;
     }
+
+
 
 }

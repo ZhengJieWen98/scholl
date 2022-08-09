@@ -13,4 +13,22 @@ public interface ParaService {
      * @return
      */
     List<Para> finaAllSchoolUrls();
+
+    /**
+     * @Title finaSchoolNews
+     * @description 查询高校的最新消息Url
+     * @author 郑洁文
+     * @date 2022年8月9日 上午11:05
+     * @return
+     */
+    Para finaSchoolNewsUrl();
+
+    /**
+     * @Title finaSchoolNewsInfoUrl
+     * @description 查询高校的最新消息详情Url
+     * @author 郑洁文
+     * @date 2022年8月9日 下午15:32
+     * @return
+     */
+    Para finaSchoolNewsInfoUrl();
 }

@@ -21,6 +21,12 @@ public class ParaServiceTest {
         for(Para para:paras) System.out.println(para);
     }
 
+    @Test
+    public void finaSchoolNewsUrl(){
+        Para para = service.finaSchoolNewsUrl();
+        System.out.println(para);
+    }
+
     @After
     public void destroy(){
 

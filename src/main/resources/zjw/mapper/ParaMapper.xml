@@ -12,6 +12,12 @@
         select * from para where PARACLASS like "GET_SCHOOL_%"
     </select>
 
+    <select id="finaSchoolNewsUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_NEWS"
+    </select>
 
+    <select id="finaSchoolNewsInfoUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_NEWS_INFO"
+    </select>
 
 </mapper>

@@ -23,4 +23,34 @@ public class ParaServiceImp implements ParaService {
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return paras;
     }
+
+    /**
+     * @Title finaSchoolNews
+     * @description 查询高校的最新消息Url
+     * @author 郑洁文
+     * @date 2022年8月9日 上午11:05
+     * @return
+     */
+    public Para finaSchoolNewsUrl(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        ParaMapper mapper = sqlSession.getMapper(ParaMapper.class);
+        Para para = mapper.finaSchoolNewsUrl();
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return para;
+    }
+
+    /**
+     * @Title finaSchoolNewsInfoUrl
+     * @description 查询高校的最新消息详情Url
+     * @author 郑洁文
+     * @date 2022年8月9日 下午15:32
+     * @return
+     */
+    public Para finaSchoolNewsInfoUrl(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        ParaMapper mapper = sqlSession.getMapper(ParaMapper.class);
+        Para para = mapper.finaSchoolNewsInfoUrl();
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return para;
+    }
 }
