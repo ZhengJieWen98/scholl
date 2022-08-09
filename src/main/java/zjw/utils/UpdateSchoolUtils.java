@@ -165,13 +165,4 @@ public class UpdateSchoolUtils {
         return map;
     }
 
-
-    public static void main(String[] args) {
-        try {
-            updateSchoolNewsInfo();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
