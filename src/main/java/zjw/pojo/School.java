@@ -3,6 +3,9 @@ package zjw.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
 /**
  * @ClassName School
  * @description 高校
@@ -13,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class School {
+public class School implements Serializable {
     //地址
     private String address;
     //属于

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @ClassName SchoolNewsInfo
  * @description 高校最新资讯消息详情
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SchoolNewsInfo {
+public class SchoolNewsInfo implements Serializable {
     private String addTime;
     private String content;
     private String id;

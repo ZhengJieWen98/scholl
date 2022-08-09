@@ -3,6 +3,9 @@ package zjw.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
 /**
  * @ClassName SchoolNews
  * @description 高校最新资讯消息
@@ -13,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SchoolNews {
+public class SchoolNews implements Serializable {
     private String id;
     private String isFull;
     private String isSingle;

@@ -166,4 +166,12 @@ public class UpdateSchoolUtils {
     }
 
 
+    public static void main(String[] args) {
+        try {
+            updateSchoolNewsInfo();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
