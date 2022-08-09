@@ -41,4 +41,17 @@ public class SchoolNewsServiceImp implements SchoolNewsService {
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return i;
     }
+
+    /**
+     * @Title findAllSchoolNewsSchoolIdAndTypeAndId
+     * @description 查询所有的SchoolId,Type,Id学校消息
+     * @author 郑洁文
+     * @date 2022年8月9日 下午16:33
+     * @return
+     */
+    public List<SchoolNews> findAllSchoolNewsSchoolIdAndTypeAndId(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        SchoolNewsMapper mapper = sqlSession.getMapper(SchoolNewsMapper.class);
+        return mapper.findAllSchoolNewsSchoolIdAndTypeAndId();
+    }
 }

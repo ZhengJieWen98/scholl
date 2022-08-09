@@ -1,5 +1,6 @@
 package zjw.service;
 
+import zjw.pojo.SchoolNews;
 import zjw.pojo.SchoolNewsInfo;
 
 public interface SchoolNewsInfoService {
@@ -18,8 +19,8 @@ public interface SchoolNewsInfoService {
      * @description 批量delete学校消息
      * @author 郑洁文
      * @date 2022年8月9日 下午13:51
-     * @param school_id
+     * @param schoolNews
      * @return
      */
-    int deleteSchoolNewsInfo(String school_id);
+    int deleteSchoolNewsInfo(SchoolNews schoolNews);
 }

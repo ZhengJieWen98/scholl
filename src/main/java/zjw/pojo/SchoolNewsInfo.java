@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SchoolNewsInfo {
     private String addTime;
-    private String context;
+    private String content;
     private String id;
     private String isFull;
     private String isSell;

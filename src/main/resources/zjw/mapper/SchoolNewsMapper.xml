@@ -15,5 +15,9 @@
         delete from school_news where school_id = #{school_id}
     </delete>
 
+    <select id="findAllSchoolNewsSchoolIdAndTypeAndId" resultType="schoolNews">
+        select school_id as schoolId,type,id from school_news
+    </select>
+
 
 </mapper>

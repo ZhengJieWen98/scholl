@@ -24,4 +24,15 @@ public interface SchoolNewsMapper {
      * @return
      */
     int deleteSchoolNews(String school_id);
+
+
+    /**
+     * @Title findAllSchoolNewsSchoolIdAndTypeAndId
+     * @description 查询所有的SchoolId,Type,Id学校消息
+     * @author 郑洁文
+     * @date 2022年8月9日 下午16:33
+     * @return
+     */
+    List<SchoolNews> findAllSchoolNewsSchoolIdAndTypeAndId();
+
 }
