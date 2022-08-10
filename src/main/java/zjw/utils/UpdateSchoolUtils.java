@@ -85,7 +85,7 @@ public class UpdateSchoolUtils {
 
     /**
      * @Title updateSchoolNews
-     * @description 更新所有的高校信息
+     * @description 更新所有的高校资讯信息
      * @author 郑洁文
      * @date 2022年8月8日 下午15:32
      */
@@ -112,7 +112,7 @@ public class UpdateSchoolUtils {
 
     /**
      * @Title updateSchool
-     * @description 更新高校信息
+     * @description 更新高校资讯信息
      * @author 郑洁文
      * @date 2022年8月8日 下午15:32
      * @param school_id
@@ -141,7 +141,7 @@ public class UpdateSchoolUtils {
 
     /**
      * @Title updateSchoolNewsInfo
-     * @description 更新所有的高校信息详情
+     * @description 更新所有的高校资讯信息详情
      * @author 郑洁文
      * @date 2022年8月8日 下午16:40
      */
@@ -169,7 +169,7 @@ public class UpdateSchoolUtils {
 
     /**
      * @Title updateSchoolNewsInfo
-     * @description 更新高校信息详情
+     * @description 更新高校资讯信息详情
      * @author 郑洁文
      * @date 2022年8月8日 下午16:40
      * @param schoolNews
@@ -242,6 +242,7 @@ public class UpdateSchoolUtils {
         map.put("urlEnd",split[1]);
         return map;
     }
+
 
 
 }
