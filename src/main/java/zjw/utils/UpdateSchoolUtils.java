@@ -3,6 +3,7 @@ package zjw.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import zjw.exception.VisitException;
 import zjw.pojo.Para;
 import zjw.pojo.School;
 import zjw.pojo.SchoolNews;
@@ -26,11 +27,11 @@ public class UpdateSchoolUtils {
 
     /**
      * @Title updateSchool
-     * @description 更新高校信息
+     * @description 更新所有高校信息
      * @author 郑洁文
      * @date 2022年8月8日 下午15:32
      */
-    public static void updateSchool() throws IOException {
+    public static void updateSchool(){
         List<Para> paras = paraService.finaAllSchoolUrls();
         for(Para para:paras){
             /*
@@ -40,27 +41,43 @@ public class UpdateSchoolUtils {
             int countPage = 1;//默认总页数1页
             for(int i=1;i<=countPage;i++){
                 String url=map.get("urlStart")+i+map.get("urlEnd");
-                String jsonString = MyHttpClient.fetchHtmlSync(url);
-                JSONObject resout = JSONObject.parseObject(jsonString);
-                if("0000".equals(resout.get("code").toString())){
-                    JSONObject data = JSONObject.parseObject(resout.get("data").toString());
-                    int numFound = Integer.parseInt(data.get("numFound").toString());
-                    countPage = numFound%20==0?numFound/20:numFound/20+1;
-                    Object item = data.get("item");
-                    List<School> schools = JSONObject.parseArray(item.toString(), School.class);
-                    for(School school:schools){
-                        schoolService.deleteSchool(school);
-                        schoolService.addSchool(school);
-                        updateSchoolNews(school.getSchool_id());
-                    }
-                }else{
-                    //访问频繁,暂停30分钟
-                    try {
+                String jsonString = null;
+                try {
+                    jsonString = MyHttpClient.fetchHtmlSync(url);
+                    JSONObject resout = JSONObject.parseObject(jsonString);
+                    if("0000".equals(resout.get("code").toString())){
+                        JSONObject data = JSONObject.parseObject(resout.get("data").toString());
+                        int numFound = Integer.parseInt(data.get("numFound").toString());
+                        countPage = numFound%20==0?numFound/20:numFound/20+1;
+                        Object item = data.get("item");
+                        List<School> schools = JSONObject.parseArray(item.toString(), School.class);
+                        for(School school:schools){
+                            schoolService.deleteSchool(school);
+                            schoolService.addSchool(school);
+                            updateSchoolNews(school.getSchool_id());
+                        }
+                    }else{
+                        //访问频繁,暂停30分钟
                         Thread.sleep(1000*60*30);
                         i--;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
+                    //避免访问频繁,暂停5s
+                    Thread.sleep(1000*5);
+                } catch (IOException e) {
+                    //无法访问,跳过
+                    e.printStackTrace();
+                } catch (VisitException e) {
+                    //子操作访问频繁
+                    e.printStackTrace();
+                    //子操作访问频繁,暂停30分钟
+                    try {
+                        Thread.sleep(1000*60*30);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                    i--;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -78,7 +95,17 @@ public class UpdateSchoolUtils {
             try {
                 updateSchoolNews(allSchoolId.get(i));
             } catch (IOException e) {
+                //无法访问,跳过
                 e.printStackTrace();
+            } catch (VisitException e) {
+                //访问频繁,暂停访问30分钟
+                e.printStackTrace();
+                try {
+                    Thread.sleep(1000*60*30);
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+                i--;
             }
         }
     }
@@ -90,8 +117,7 @@ public class UpdateSchoolUtils {
      * @date 2022年8月8日 下午15:32
      * @param school_id
      */
-    public static void updateSchoolNews(String school_id) throws IOException {
-        schoolNewsService.deleteSchoolNews(school_id);
+    public static void updateSchoolNews(String school_id) throws IOException,VisitException {
         Map<String, String> mapUrl = analysisSchoolNewsUrl();
         String url = mapUrl.get("urlStart")+school_id+mapUrl.get("urlEnd");
         String s = MyHttpClient.fetchHtmlSync(url);
@@ -103,18 +129,41 @@ public class UpdateSchoolUtils {
             List<SchoolNews> news = schoolNews.stream().limit(10).collect(Collectors.toList());
             //schoolNewsService.addSchoolNews(news);
             for(SchoolNews item:news){
+                schoolNewsService.deleteSchoolNews(school_id);
                 schoolNewsService.addSchoolNews(item);
                 updateSchoolNewsInfo(item);
             }
+        }else{
+            throw new VisitException("访问频繁,没有获取到数据");
         }
 
     }
 
-    public static void updateSchoolNewsInfo() throws IOException {
+    /**
+     * @Title updateSchoolNewsInfo
+     * @description 更新所有的高校信息详情
+     * @author 郑洁文
+     * @date 2022年8月8日 下午16:40
+     */
+    public static void updateSchoolNewsInfo() {
         List<SchoolNews> list = schoolNewsService.findAllSchoolNewsSchoolIdAndTypeAndId();
         for(int i=0;i<list.size();i++){
             SchoolNews schoolNews = list.get(i);
-            updateSchoolNewsInfo(schoolNews);
+            try {
+                updateSchoolNewsInfo(schoolNews);
+            } catch (IOException e) {
+                //无法访问,跳过
+                e.printStackTrace();
+            } catch (VisitException e) {
+                //访问频繁,暂停访问30分钟
+                e.printStackTrace();
+                try {
+                    Thread.sleep(1000*60*30);
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+                i--;
+            }
         }
     }
 
@@ -125,8 +174,7 @@ public class UpdateSchoolUtils {
      * @date 2022年8月8日 下午16:40
      * @param schoolNews
      */
-    public static void updateSchoolNewsInfo(SchoolNews schoolNews) throws IOException {
-        schoolNewsInfoService.deleteSchoolNewsInfo(schoolNews);
+    public static void updateSchoolNewsInfo(SchoolNews schoolNews) throws IOException,VisitException {
         Map<String, String> mapUrl = analysisSchoolNewsInfoUrl();
         String url = mapUrl.get("urlStart")+schoolNews.getSchoolId()+mapUrl.get("urlEnd")+schoolNews.getType()+"/"+schoolNews.getId()+".json";
         String s = MyHttpClient.fetchHtmlSync(url);
@@ -135,7 +183,10 @@ public class UpdateSchoolUtils {
         if("0000".equals(jsonObject.get("code").toString())){
             Object data = jsonObject.get("data");
             SchoolNewsInfo schoolNewsInfo = JSON.parseObject(data.toString(), SchoolNewsInfo.class);
+            schoolNewsInfoService.deleteSchoolNewsInfo(schoolNews);
             schoolNewsInfoService.addSchoolNewsInfo(schoolNewsInfo);
+        }else{
+            throw new VisitException("访问频繁,没有获取到数据");
         }
     }
 

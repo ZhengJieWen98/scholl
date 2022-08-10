@@ -35,7 +35,7 @@ public class MyHttpClient {
      */
     public static String fetchHtmlSync(String url) throws IOException {
         try {
-            Thread.sleep(5000);//没有ip代理，避免被封ip
+            Thread.sleep(20);//没有ip代理，避免被封ip
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
