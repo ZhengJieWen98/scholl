@@ -42,28 +42,44 @@ public class UpdateSchoolUtils {
                 String url=map.get("urlStart")+i+map.get("urlEnd");
                 String jsonString = MyHttpClient.fetchHtmlSync(url);
                 JSONObject resout = JSONObject.parseObject(jsonString);
-                JSONObject data = JSONObject.parseObject(resout.get("data").toString());
-                int numFound = Integer.parseInt(data.get("numFound").toString());
-                countPage = numFound%20==0?numFound/20:numFound/20+1;
-                Object item = data.get("item");
-                List<School> schools = JSONObject.parseArray(item.toString(), School.class);
-                for(School school:schools){
-                    schoolService.addSchool(school);
+                if("0000".equals(resout.get("code").toString())){
+                    JSONObject data = JSONObject.parseObject(resout.get("data").toString());
+                    int numFound = Integer.parseInt(data.get("numFound").toString());
+                    countPage = numFound%20==0?numFound/20:numFound/20+1;
+                    Object item = data.get("item");
+                    List<School> schools = JSONObject.parseArray(item.toString(), School.class);
+                    for(School school:schools){
+                        schoolService.deleteSchool(school);
+                        schoolService.addSchool(school);
+                        updateSchoolNews(school.getSchool_id());
+                    }
+                }else{
+                    //访问频繁,暂停30分钟
+                    try {
+                        Thread.sleep(1000*60*30);
+                        i--;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
     }
 
     /**
-     * @Title updateSchool
+     * @Title updateSchoolNews
      * @description 更新所有的高校信息
      * @author 郑洁文
      * @date 2022年8月8日 下午15:32
      */
-    public static void updateSchoolNews() throws IOException {
+    public static void updateSchoolNews(){
         List<String> allSchoolId = schoolService.findAllSchoolId();
         for(int i=0;i<allSchoolId.size();i++){
-            updateSchoolNews(allSchoolId.get(i));
+            try {
+                updateSchoolNews(allSchoolId.get(i));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -80,10 +96,18 @@ public class UpdateSchoolUtils {
         String url = mapUrl.get("urlStart")+school_id+mapUrl.get("urlEnd");
         String s = MyHttpClient.fetchHtmlSync(url);
         JSONObject jsonObject = JSONObject.parseObject(s);
-        Object data = jsonObject.get("data");
-        List<SchoolNews> schoolNews = JSON.parseArray(data.toString(), SchoolNews.class);
-        List<SchoolNews> news = schoolNews.stream().limit(10).collect(Collectors.toList());
-        schoolNewsService.addSchoolNews(news);
+        //成功获取
+        if("0000".equals(jsonObject.get("code").toString())){
+            Object data = jsonObject.get("data");
+            List<SchoolNews> schoolNews = JSON.parseArray(data.toString(), SchoolNews.class);
+            List<SchoolNews> news = schoolNews.stream().limit(10).collect(Collectors.toList());
+            //schoolNewsService.addSchoolNews(news);
+            for(SchoolNews item:news){
+                schoolNewsService.addSchoolNews(item);
+                updateSchoolNewsInfo(item);
+            }
+        }
+
     }
 
     public static void updateSchoolNewsInfo() throws IOException {
@@ -107,9 +131,12 @@ public class UpdateSchoolUtils {
         String url = mapUrl.get("urlStart")+schoolNews.getSchoolId()+mapUrl.get("urlEnd")+schoolNews.getType()+"/"+schoolNews.getId()+".json";
         String s = MyHttpClient.fetchHtmlSync(url);
         JSONObject jsonObject = JSONObject.parseObject(s);
-        Object data = jsonObject.get("data");
-        SchoolNewsInfo schoolNewsInfo = JSON.parseObject(data.toString(), SchoolNewsInfo.class);
-        schoolNewsInfoService.addSchoolNewsInfo(schoolNewsInfo);
+        //成功获取
+        if("0000".equals(jsonObject.get("code").toString())){
+            Object data = jsonObject.get("data");
+            SchoolNewsInfo schoolNewsInfo = JSON.parseObject(data.toString(), SchoolNewsInfo.class);
+            schoolNewsInfoService.addSchoolNewsInfo(schoolNewsInfo);
+        }
     }
 
 
@@ -164,5 +191,6 @@ public class UpdateSchoolUtils {
         map.put("urlEnd",split[1]);
         return map;
     }
+
 
 }

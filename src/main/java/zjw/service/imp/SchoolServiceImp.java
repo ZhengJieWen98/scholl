@@ -25,6 +25,23 @@ public class SchoolServiceImp implements SchoolService {
     }
 
     /**
+     * @Title deleteSchool
+     * @description delete学校
+     * @author 郑洁文
+     * @date 2022年8月3日 上午9:22
+     * @param school
+     * @return
+     */
+    public int deleteSchool(School school){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        SchoolMapper mapper = sqlSession.getMapper(SchoolMapper.class);
+        int i = mapper.deleteSchool(school);
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return i;
+    }
+
+
+    /**
      * @Title findAllSchoolId
      * @description 查询所有的school_id
      * @author 郑洁文

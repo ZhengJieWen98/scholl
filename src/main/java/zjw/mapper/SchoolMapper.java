@@ -16,6 +16,16 @@ public interface SchoolMapper {
     int addSchool(School school);
 
     /**
+     * @Title deleteSchool
+     * @description delete学校
+     * @author 郑洁文
+     * @date 2022年8月3日 上午9:22
+     * @param school
+     * @return
+     */
+    int deleteSchool(School school);
+
+    /**
      * @Title findAllSchoolId
      * @description 查询所有的school_id
      * @author 郑洁文

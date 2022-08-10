@@ -11,17 +11,33 @@ import java.util.List;
 public class SchoolNewsServiceImp implements SchoolNewsService {
 
     /**
-     * @Title addSchoolNews
+     * @Title addSchoolNewsList
      * @description 批量添加学校消息
      * @author 郑洁文
      * @date 2022年8月9日 中午12:34
      * @param list
      * @return
      */
-    public int addSchoolNews(List<SchoolNews> list){
+    public int addSchoolNewsList(List<SchoolNews> list){
         SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
         SchoolNewsMapper mapper = sqlSession.getMapper(SchoolNewsMapper.class);
-        int i = mapper.addSchoolNews(list);
+        int i = mapper.addSchoolNewsList(list);
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return i;
+    }
+
+    /**
+     * @Title addSchoolNews
+     * @description 添加学校消息
+     * @author 郑洁文
+     * @date 2022年8月10日 上午9:11
+     * @param schoolNews
+     * @return
+     */
+    public int addSchoolNews(SchoolNews schoolNews){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        SchoolNewsMapper mapper = sqlSession.getMapper(SchoolNewsMapper.class);
+        int i = mapper.addSchoolNews(schoolNews);
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return i;
     }
