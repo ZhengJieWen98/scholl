@@ -27,13 +27,13 @@ public interface SchoolNewsMapper {
 
     /**
      * @Title deleteSchoolNews
-     * @description 批量delete学校消息
+     * @description delete学校消息
      * @author 郑洁文
      * @date 2022年8月9日 下午13:51
-     * @param schoolId
+     * @param schoolNews
      * @return
      */
-    int deleteSchoolNews(String schoolId);
+    int deleteSchoolNews(SchoolNews schoolNews);
 
 
     /**

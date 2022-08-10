@@ -18,8 +18,8 @@
         (#{id},#{isFull},#{isSingle},#{schoolId},#{title},#{type},#{updateTime},#{year})
     </insert>
 
-    <delete id="deleteSchoolNews" parameterType="string">
-        delete from school_news where school_id = #{schoolId}
+    <delete id="deleteSchoolNews" parameterType="schoolNews">
+        delete from school_news where school_id = #{schoolId} and type=#{type} and id=#{id}
     </delete>
 
     <select id="findAllSchoolNewsSchoolIdAndTypeAndId" resultType="schoolNews">

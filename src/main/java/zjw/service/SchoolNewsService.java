@@ -28,13 +28,13 @@ public interface SchoolNewsService {
 
     /**
      * @Title deleteSchoolNews
-     * @description 批量delete学校消息
+     * @description delete学校消息
      * @author 郑洁文
      * @date 2022年8月9日 下午13:51
-     * @param school_id
+     * @param schoolNews
      * @return
      */
-    int deleteSchoolNews(String school_id);
+    int deleteSchoolNews(SchoolNews schoolNews);
 
     /**
      * @Title findAllSchoolNewsSchoolIdAndTypeAndId

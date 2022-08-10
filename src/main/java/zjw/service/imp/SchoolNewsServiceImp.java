@@ -47,13 +47,13 @@ public class SchoolNewsServiceImp implements SchoolNewsService {
      * @description 批量delete学校消息
      * @author 郑洁文
      * @date 2022年8月9日 下午13:51
-     * @param school_id
+     * @param schoolNews
      * @return
      */
-    public int deleteSchoolNews(String school_id){
+    public int deleteSchoolNews(SchoolNews schoolNews){
         SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
         SchoolNewsMapper mapper = sqlSession.getMapper(SchoolNewsMapper.class);
-        int i = mapper.deleteSchoolNews(school_id);
+        int i = mapper.deleteSchoolNews(schoolNews);
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return i;
     }

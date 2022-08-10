@@ -91,23 +91,55 @@ public class UpdateSchoolUtils {
      */
     public static void updateSchoolNews(){
         List<String> allSchoolId = schoolService.findAllSchoolId();
-        for(int i=0;i<allSchoolId.size();i++){
-            try {
-                updateSchoolNews(allSchoolId.get(i));
-            } catch (IOException e) {
-                //无法访问,跳过
-                e.printStackTrace();
-            } catch (VisitException e) {
-                //访问频繁,暂停访问30分钟
-                e.printStackTrace();
-                try {
-                    Thread.sleep(1000*60*30);
-                } catch (InterruptedException interruptedException) {
-                    interruptedException.printStackTrace();
+//        for(int i=0;i<allSchoolId.size();i++){
+//            try {
+//                updateSchoolNews(allSchoolId.get(i));
+//            } catch (IOException e) {
+//                //无法访问,跳过
+//                e.printStackTrace();
+//            } catch (VisitException e) {
+//                //访问频繁,暂停访问30分钟
+//                e.printStackTrace();
+//                try {
+//                    Thread.sleep(1000*60*30);
+//                } catch (InterruptedException interruptedException) {
+//                    interruptedException.printStackTrace();
+//                }
+//                i--;
+//            }
+//        }
+
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 100;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*100;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            updateSchoolNews(allSchoolId.get(j));
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        } catch (VisitException e) {
+                            //访问频繁,暂停访问30分钟
+                            e.printStackTrace();
+                            try {
+                                Thread.sleep(1000*60*30);
+                            } catch (InterruptedException interruptedException) {
+                                interruptedException.printStackTrace();
+                            }
+                            j--;
+                        }
+                    }
                 }
-                i--;
-            }
+            }).start();
         }
+
     }
 
     /**
@@ -129,7 +161,7 @@ public class UpdateSchoolUtils {
             List<SchoolNews> news = schoolNews.stream().limit(10).collect(Collectors.toList());
             //schoolNewsService.addSchoolNews(news);
             for(SchoolNews item:news){
-                schoolNewsService.deleteSchoolNews(school_id);
+                schoolNewsService.deleteSchoolNews(item);
                 schoolNewsService.addSchoolNews(item);
                 updateSchoolNewsInfo(item);
             }
@@ -147,10 +179,10 @@ public class UpdateSchoolUtils {
      */
     public static void updateSchoolNewsInfo() {
         List<SchoolNews> list = schoolNewsService.findAllSchoolNewsSchoolIdAndTypeAndId();
+
         for(int i=0;i<list.size();i++){
-            SchoolNews schoolNews = list.get(i);
             try {
-                updateSchoolNewsInfo(schoolNews);
+                updateSchoolNewsInfo(list.get(i));
             } catch (IOException e) {
                 //无法访问,跳过
                 e.printStackTrace();
@@ -165,6 +197,38 @@ public class UpdateSchoolUtils {
                 i--;
             }
         }
+
+//        //开启线程
+//        int size = list.size();
+//        int pageSize = 100;
+//        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+//        for(int i=1;i<=countPage;i++){
+//            int start = (i-1)*100;
+//            int end = i==countPage?size:i*pageSize;
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    for(int j=start;j<end;j++){
+//                        try {
+//                            updateSchoolNewsInfo(list.get(j));
+//                        } catch (IOException e) {
+//                            //无法访问,跳过
+//                            e.printStackTrace();
+//                        } catch (VisitException e) {
+//                            //访问频繁,暂停访问30分钟
+//                            e.printStackTrace();
+//                            try {
+//                                Thread.sleep(1000*60*30);
+//                            } catch (InterruptedException interruptedException) {
+//                                interruptedException.printStackTrace();
+//                            }
+//                            j--;
+//                        }
+//                    }
+//                }
+//            }).start();
+//        }
+
     }
 
     /**
