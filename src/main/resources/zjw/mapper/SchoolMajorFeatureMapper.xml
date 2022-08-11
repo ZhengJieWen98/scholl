@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.SchoolMajorFeatureMapper">
+
+    <insert id="addSchoolMajorFeatureList" parameterType="list">
+        insert into school_major_feature(code,id,is_important,is_video,level3_code,level3_id,level3_name,level3_weight,limit_year,nation_feature,province_feature,school_id,special_id,special_name,special_type,type_name,year) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.code},#{item.id},#{item.is_important},#{item.is_video},#{item.level3_code},#{item.level3_id},#{item.level3_name},#{item.level3_weight},#{item.limit_year},#{item.nation_feature},#{item.province_feature},#{item.school_id},#{item.special_id},#{item.special_name},#{item.special_type},#{item.type_name},#{item.year})
+        </foreach>
+    </insert>
+
+
+
+
+</mapper>

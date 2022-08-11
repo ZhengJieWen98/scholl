@@ -20,4 +20,13 @@
         select * from para where PARACLASS = "SCHOOL_NEWS_INFO"
     </select>
 
+    <select id="finaSchoolMajorUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_MAJOR"
+    </select>
+
+    <select id="finaSchoolMajorInfoUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_MAJOR_INFO"
+    </select>
+
+
 </mapper>

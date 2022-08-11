@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import zjw.exception.VisitException;
-import zjw.pojo.Para;
-import zjw.pojo.School;
-import zjw.pojo.SchoolNews;
-import zjw.pojo.SchoolNewsInfo;
+import zjw.pojo.*;
+import zjw.pojo.group.SchoolMajorGroup;
 import zjw.service.*;
 import zjw.service.imp.*;
 
@@ -22,8 +20,14 @@ public class UpdateSchoolUtils {
     private static SchoolService schoolService = new SchoolServiceImp();
     private static SchoolNewsService schoolNewsService = new SchoolNewsServiceImp();
     private static SchoolNewsInfoService schoolNewsInfoService = new SchoolNewsServiceInfoImp();
-    private static Para SchoolNewsUrlPara = null;
-    private static Para SchoolNewsInfoUrlPara = null;
+    private static SchoolMajorFeatureService schoolMajorFeatureService = new SchoolMajorFeatureServiceImp();
+    private static SchoolMajorTyperService schoolMajorTyperService = new SchoolMajorTyperServiceImp();
+    private static SchoolMajorService schoolMajorService = new SchoolMajorServiceImp();
+    private static SchoolMajorInfoService schoolMajorInfoService = new SchoolMajorInfoServiceImp();
+    private static Map<String,String> schoolNewsUrlMap = null;
+    private static Map<String,String> schoolNewsInfoUrlMap = null;
+    private static Map<String,String> SchoolMajorUrlMap = null;
+    private static Map<String,String> SchoolMajorInfoUrlMap = null;
 
     /**
      * @Title updateSchool
@@ -114,7 +118,7 @@ public class UpdateSchoolUtils {
         int pageSize = 30;
         int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
         for(int i=1;i<=countPage;i++){
-            int start = (i-1)*100;
+            int start = (i-1)*pageSize;
             int end = i==countPage?size:i*pageSize;
             new Thread(new Runnable() {
                 @Override
@@ -138,6 +142,8 @@ public class UpdateSchoolUtils {
                     }
                 }
             }).start();
+
+
         }
 
     }
@@ -254,7 +260,119 @@ public class UpdateSchoolUtils {
         }
     }
 
+    /**
+     * @Title updateSchoolMajor
+     * @description 更新高校所有开设专业信息
+     * @author 郑洁文
+     * @date 2022年8月11日 下午17:10
+     */
+    public static void updateSchoolMajor(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 20;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            updateSchoolMajor(allSchoolId.get(j));
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        } catch (VisitException e) {
+                            //访问频繁,暂停访问5分钟
+                            e.printStackTrace();
+                            try {
+                                Thread.sleep(1000*60*5);
+                            } catch (InterruptedException interruptedException) {
+                                interruptedException.printStackTrace();
+                            }
+                            j--;
+                        }
+                    }
+                }
+            }).start();
+        }
+    }
 
+    /**
+     * @Title updateSchoolMajor
+     * @description 更新高校开设专业信息
+     * @author 郑洁文
+     * @date 2022年8月11日 下午15:18
+     * @param school_id
+     */
+    public static void updateSchoolMajor(String school_id) throws IOException,VisitException {
+        Map<String, String> mapUrl = analysisSchoolMajorUrl();
+        String url = mapUrl.get("urlStart")+school_id+mapUrl.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if("0000".equals(jsonObject.get("code").toString())){
+            Object data = jsonObject.get("data");
+            SchoolMajorGroup schoolMajorGroup = JSON.parseObject(data.toString(), SchoolMajorGroup.class);
+            List<SchoolMajorFeature> nation_feature = schoolMajorGroup.getNation_feature();
+
+            if(nation_feature.size()>0){
+                schoolMajorFeatureService.addSchoolMajorFeatureList(nation_feature);
+            }
+
+            List<SchoolMajorType> special = schoolMajorGroup.getSpecial();
+            for(SchoolMajorType schoolMajorType:special){
+                schoolMajorType.setSchool_id(school_id);
+                //
+                schoolMajorTyperService.addSchoolMajorType(schoolMajorType);
+                //
+                schoolMajorService.addSchoolMajorList(schoolMajorType.getSpecial());
+
+                updateSchoolMajorInfo(schoolMajorType.getSpecial());
+
+            }
+
+        }else{
+            throw new VisitException("未获取到数据！");
+        }
+    }
+
+    /**
+     * @Title updateSchoolMajorInfo
+     * @description 更新高校开设专业信息
+     * @author 郑洁文
+     * @date 2022年8月11日 下午16:59
+     * @param schoolMajorInfo
+     */
+    public static void updateSchoolMajorInfo(SchoolMajorInfo schoolMajorInfo){
+        schoolMajorInfoService.addSchoolMajorInfo(schoolMajorInfo);
+    }
+
+    /**
+     * @Title updateSchoolMajorInfo
+     * @description 更新高校开设专业信息
+     * @author 郑洁文
+     * @date 2022年8月11日 下午17:00
+     * @param schoolMajorList
+     */
+    public static void updateSchoolMajorInfo(List<SchoolMajor> schoolMajorList) throws IOException, VisitException {
+        for(SchoolMajor schoolMajor:schoolMajorList){
+            String school_id = schoolMajor.getSchool_id();
+            String id = schoolMajor.getId();
+            Map<String, String> urlMap = analysisSchoolMajorInfoUrl();
+            String url = urlMap.get("urlStart")+school_id+urlMap.get("urlEnd")+id+".json";
+            String s = MyHttpClient.fetchHtmlSync(url);
+            JSONObject jsonObject = JSONObject.parseObject(s);
+            if("0000".equals(jsonObject.get("code").toString())){
+                Object data = jsonObject.get("data");
+                SchoolMajorInfo schoolMajorInfo = JSON.parseObject(data.toString(), SchoolMajorInfo.class);
+                updateSchoolMajorInfo(schoolMajorInfo);
+            }else{
+                throw new VisitException("未获取到数据！");
+            }
+        }
+    }
 
     /**
      * @Title analysisSchoolUrl
@@ -279,10 +397,11 @@ public class UpdateSchoolUtils {
      * @date 2022年8月9日 上午11:22
      */
     public static Map<String,String> analysisSchoolNewsUrl(){
-        if(SchoolNewsUrlPara==null){
-            SchoolNewsUrlPara = paraService.finaSchoolNewsUrl();
+        if(schoolNewsUrlMap==null){
+            Para SchoolNewsUrlPara = paraService.finaSchoolNewsUrl();
+            schoolNewsUrlMap = analysis(SchoolNewsUrlPara.getPARAVALUE());
         }
-        return analysis(SchoolNewsUrlPara.getPARAVALUE());
+        return schoolNewsUrlMap;
     }
 
     /**
@@ -292,12 +411,40 @@ public class UpdateSchoolUtils {
      * @date 2022年8月9日 下午16:45
      */
     public static Map<String,String> analysisSchoolNewsInfoUrl(){
-        if(SchoolNewsInfoUrlPara==null){
-            SchoolNewsInfoUrlPara = paraService.finaSchoolNewsInfoUrl();
+        if(schoolNewsInfoUrlMap==null){
+            Para SchoolNewsInfoUrlPara = paraService.finaSchoolNewsInfoUrl();
+            schoolNewsInfoUrlMap=analysis(SchoolNewsInfoUrlPara.getPARAVALUE());
         }
-        return analysis(SchoolNewsInfoUrlPara.getPARAVALUE());
+        return schoolNewsInfoUrlMap;
     }
 
+    /**
+     * @Title analysisSchoolMajorUrl
+     * @description 解析高校高校开设专业url地址
+     * @author 郑洁文
+     * @date 2022年8月11日 下午15:01
+     */
+    public static Map<String,String> analysisSchoolMajorUrl(){
+        if(SchoolMajorUrlMap==null){
+            Para SchoolMajorUrlPara = paraService.finaSchoolMajorUrl();
+            SchoolMajorUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
+        }
+        return SchoolMajorUrlMap;
+    }
+
+    /**
+     * @Title analysisSchoolMajorUrl
+     * @description 解析高校高校开设专业详情url地址
+     * @author 郑洁文
+     * @date 2022年8月11日 下午16:50
+     */
+    public static Map<String,String> analysisSchoolMajorInfoUrl(){
+        if(SchoolMajorInfoUrlMap==null){
+            Para SchoolMajorUrlPara = paraService.finaSchoolMajorInfoUrl();
+            SchoolMajorInfoUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
+        }
+        return SchoolMajorInfoUrlMap;
+    }
 
     public static Map<String,String> analysis(String url){
         String[] split = url.split("school_id");
@@ -307,8 +454,8 @@ public class UpdateSchoolUtils {
         return map;
     }
 
-    public static void main(String[] args) {
-        updateSchoolNews();
-    }
 
+    public static void main(String[] args) throws IOException,VisitException {
+        updateSchoolMajor();
+    }
 }

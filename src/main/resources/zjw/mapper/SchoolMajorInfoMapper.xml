@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.SchoolMajorInfoMapper">
+
+    <insert id="addSchoolMajorInfo" parameterType="schoolMajorInfo">
+        insert into school_major_info(content,degree,id,level1_name,level2_name,level3_name,limit_year,name,nation_feature,province_feature,school_id,special_id,status)
+        values(#{content},#{degree},#{id},#{level1_name},#{level2_name},#{level3_name},#{limit_year},#{name},#{nation_feature},#{province_feature},#{school_id},#{special_id},#{status})
+    </insert>
+
+
+
+
+
+</mapper>
