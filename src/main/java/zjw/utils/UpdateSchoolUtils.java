@@ -57,8 +57,8 @@ public class UpdateSchoolUtils {
                             updateSchoolNews(school.getSchool_id());
                         }
                     }else{
-                        //访问频繁,暂停30分钟
-                        Thread.sleep(1000*60*30);
+                        //访问频繁,暂停5分钟
+                        Thread.sleep(1000*60*5);
                         i--;
                     }
                     //避免访问频繁,暂停5s
@@ -69,9 +69,9 @@ public class UpdateSchoolUtils {
                 } catch (VisitException e) {
                     //子操作访问频繁
                     e.printStackTrace();
-                    //子操作访问频繁,暂停30分钟
+                    //子操作访问频繁,暂停5分钟
                     try {
-                        Thread.sleep(1000*60*30);
+                        Thread.sleep(1000*60*5);
                     } catch (InterruptedException interruptedException) {
                         interruptedException.printStackTrace();
                     }
@@ -98,10 +98,10 @@ public class UpdateSchoolUtils {
 //                //无法访问,跳过
 //                e.printStackTrace();
 //            } catch (VisitException e) {
-//                //访问频繁,暂停访问30分钟
+//                //访问频繁,暂停访问5分钟
 //                e.printStackTrace();
 //                try {
-//                    Thread.sleep(1000*60*30);
+//                    Thread.sleep(1000*60*5);
 //                } catch (InterruptedException interruptedException) {
 //                    interruptedException.printStackTrace();
 //                }
@@ -111,7 +111,7 @@ public class UpdateSchoolUtils {
 
         //开启线程
         int size = allSchoolId.size();
-        int pageSize = 100;
+        int pageSize = 30;
         int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
         for(int i=1;i<=countPage;i++){
             int start = (i-1)*100;
@@ -126,10 +126,10 @@ public class UpdateSchoolUtils {
                             //无法访问,跳过
                             e.printStackTrace();
                         } catch (VisitException e) {
-                            //访问频繁,暂停访问30分钟
+                            //访问频繁,暂停访问5分钟
                             e.printStackTrace();
                             try {
-                                Thread.sleep(1000*60*30);
+                                Thread.sleep(1000*60*5);
                             } catch (InterruptedException interruptedException) {
                                 interruptedException.printStackTrace();
                             }
@@ -187,10 +187,10 @@ public class UpdateSchoolUtils {
                 //无法访问,跳过
                 e.printStackTrace();
             } catch (VisitException e) {
-                //访问频繁,暂停访问30分钟
+                //访问频繁,暂停访问5分钟
                 e.printStackTrace();
                 try {
-                    Thread.sleep(1000*60*30);
+                    Thread.sleep(1000*60*5);
                 } catch (InterruptedException interruptedException) {
                     interruptedException.printStackTrace();
                 }
@@ -215,10 +215,10 @@ public class UpdateSchoolUtils {
 //                            //无法访问,跳过
 //                            e.printStackTrace();
 //                        } catch (VisitException e) {
-//                            //访问频繁,暂停访问30分钟
+//                            //访问频繁,暂停访问5分钟
 //                            e.printStackTrace();
 //                            try {
-//                                Thread.sleep(1000*60*30);
+//                                Thread.sleep(1000*60*5);
 //                            } catch (InterruptedException interruptedException) {
 //                                interruptedException.printStackTrace();
 //                            }
@@ -307,6 +307,8 @@ public class UpdateSchoolUtils {
         return map;
     }
 
-
+    public static void main(String[] args) {
+        updateSchoolNews();
+    }
 
 }

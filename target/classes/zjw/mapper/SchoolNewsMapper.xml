@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.SchoolNewsMapper">
+
+    <insert id="addSchoolNewsList" parameterType="list">
+        insert into school_news(id,is_full,is_single,school_id,title,type,update_time,year) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.isFull},#{item.isSingle},#{item.schoolId},#{item.title},#{item.type},#{item.updateTime},#{item.year})
+        </foreach>
+    </insert>
+
+    <insert id="addSchoolNews" parameterType="schoolNews">
+        insert into
+        school_news(id,is_full,is_single,school_id,title,type,update_time,year)
+        values
+        (#{id},#{isFull},#{isSingle},#{schoolId},#{title},#{type},#{updateTime},#{year})
+    </insert>
+
+    <delete id="deleteSchoolNews" parameterType="schoolNews">
+        delete from school_news where school_id = #{schoolId} and type=#{type} and id=#{id}
+    </delete>
+
+    <select id="findAllSchoolNewsSchoolIdAndTypeAndId" resultType="schoolNews">
+        select school_id as schoolId,type,id from school_news
+    </select>
+
+
+</mapper>

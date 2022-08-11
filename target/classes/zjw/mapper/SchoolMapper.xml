@@ -22,6 +22,10 @@
         values (#{name},#{nature_name},#{level_name},#{dual_class_name},#{belong},#{type_name},#{province_name},#{city_name},#{county_name},#{address},#{school_id})
     </insert>
 
+    <delete id="deleteSchool" parameterType="school">
+        delete from school where name = #{name} and school_id = #{school_id}
+    </delete>
+
     <select id="findAllSchoolId" resultType="String">
         select school_id from school
     </select>
