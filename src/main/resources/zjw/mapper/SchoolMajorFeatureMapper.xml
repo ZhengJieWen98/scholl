@@ -11,6 +11,10 @@
         </foreach>
     </insert>
 
+    <delete id="deleteSchoolMajorFeature" parameterType="string">
+        delete from school_major_feature where school_id = #{school_id}
+    </delete>
+
 
 
 

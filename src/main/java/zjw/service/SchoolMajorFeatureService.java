@@ -14,4 +14,14 @@ public interface SchoolMajorFeatureService {
      * @return
      */
     int addSchoolMajorFeatureList(List<SchoolMajorFeature> list);
+
+    /**
+     * @Title deleteSchool
+     * @description delet学校特色专业
+     * @author 郑洁文
+     * @date 2022年8月12日 下午9:22
+     * @param school_id
+     * @return
+     */
+    int deleteSchoolMajorFeature(String school_id);
 }

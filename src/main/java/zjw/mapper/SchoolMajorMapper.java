@@ -2,6 +2,7 @@ package zjw.mapper;
 
 import zjw.pojo.School;
 import zjw.pojo.SchoolMajor;
+import zjw.pojo.SchoolMajorType;
 
 import java.util.List;
 
@@ -16,5 +17,15 @@ public interface SchoolMajorMapper {
      * @return
      */
     int addSchoolMajorList(List<SchoolMajor> schoolMajorList);
+
+    /**
+     * @Title deleteSchoolMajor
+     * @description delete学校专业类别
+     * @author 郑洁文
+     * @date 2022年8月12日 上午9:47
+     * @param schoolMajor
+     * @return
+     */
+    int deleteSchoolMajor(SchoolMajor schoolMajor);
 
 }

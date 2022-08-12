@@ -11,5 +11,9 @@
         </foreach>
     </insert>
 
+    <delete id="deleteSchoolMajor" parameterType="string">
+        delete from school_major where code = #{code} and id = #{id} and special_id = #{special_id} and school_id = #{school_id}
+    </delete>
+
 
 </mapper>

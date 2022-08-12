@@ -270,7 +270,7 @@ public class UpdateSchoolUtils {
         List<String> allSchoolId = schoolService.findAllSchoolId();
         //开启线程
         int size = allSchoolId.size();
-        int pageSize = 20;
+        int pageSize = 5;
         int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
         for(int i=1;i<=countPage;i++){
             int start = (i-1)*pageSize;
@@ -318,6 +318,7 @@ public class UpdateSchoolUtils {
             List<SchoolMajorFeature> nation_feature = schoolMajorGroup.getNation_feature();
 
             if(nation_feature.size()>0){
+                schoolMajorFeatureService.deleteSchoolMajorFeature(school_id);
                 schoolMajorFeatureService.addSchoolMajorFeatureList(nation_feature);
             }
 
@@ -325,8 +326,12 @@ public class UpdateSchoolUtils {
             for(SchoolMajorType schoolMajorType:special){
                 schoolMajorType.setSchool_id(school_id);
                 //
+                schoolMajorTyperService.deleteSchoolMajorType(schoolMajorType);
                 schoolMajorTyperService.addSchoolMajorType(schoolMajorType);
                 //
+                for(SchoolMajor schoolMajor:schoolMajorType.getSpecial()){
+                    schoolMajorService.deleteSchoolMajor(schoolMajor);
+                }
                 schoolMajorService.addSchoolMajorList(schoolMajorType.getSpecial());
 
                 updateSchoolMajorInfo(schoolMajorType.getSpecial());
@@ -346,6 +351,7 @@ public class UpdateSchoolUtils {
      * @param schoolMajorInfo
      */
     public static void updateSchoolMajorInfo(SchoolMajorInfo schoolMajorInfo){
+        schoolMajorInfoService.deleteSchoolMajorInfo(schoolMajorInfo);
         schoolMajorInfoService.addSchoolMajorInfo(schoolMajorInfo);
     }
 

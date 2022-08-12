@@ -9,6 +9,10 @@
         values(#{content},#{degree},#{id},#{level1_name},#{level2_name},#{level3_name},#{limit_year},#{name},#{nation_feature},#{province_feature},#{school_id},#{special_id},#{status})
     </insert>
 
+    <delete id="deleteSchoolMajorInfo" parameterType="schoolMajorInfo">
+        delete from school_major_info where id = #{id} and school_id = #{school_id} and special_id = #{special_id}
+    </delete>
+
 
 
 

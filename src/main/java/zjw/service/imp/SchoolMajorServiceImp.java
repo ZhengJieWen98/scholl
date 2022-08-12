@@ -25,4 +25,21 @@ public class SchoolMajorServiceImp implements SchoolMajorService {
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return i;
     }
+
+    /**
+     * @Title deleteSchoolMajorType
+     * @description delete学校专业类别
+     * @author 郑洁文
+     * @date 2022年8月12日 上午9:47
+     * @param schoolMajor
+     * @return
+     */
+    public int deleteSchoolMajor(SchoolMajor schoolMajor){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        SchoolMajorMapper mapper = sqlSession.getMapper(SchoolMajorMapper.class);
+        int i = mapper.deleteSchoolMajor(schoolMajor);
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return i;
+    }
+
 }

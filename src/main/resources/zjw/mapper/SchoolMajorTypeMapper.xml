@@ -9,6 +9,10 @@
         values(#{code},#{level3_weight},#{name},#{school_id})
     </insert>
 
+    <delete id="deleteSchoolMajorType" parameterType="schoolMajorType">
+        delete from school_major_type where code = #{code} and school_id = #{school_id}
+    </delete>
+
 
 
 
