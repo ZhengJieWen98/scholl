@@ -293,5 +293,93 @@ https://static-data.gaokao.cn/www/2.0/school/99/news/68001/192863.json
 获取到开设专业url地址,99为高校的id
 https://static-data.gaokao.cn/www/2.0/school/99/pc_special.json
 ```
+### 2.爬取所有省份高校的开设专业
+核心代码如下
+```
+    /**
+     * @Title updateSchoolMajor
+     * @description 更新高校开设专业信息
+     * @author 郑洁文
+     * @date 2022年8月11日 下午15:18
+     * @param school_id
+     */
+    public static void updateSchoolMajor(String school_id) throws IOException,VisitException {
+        Map<String, String> mapUrl = analysisSchoolMajorUrl();
+        String url = mapUrl.get("urlStart")+school_id+mapUrl.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if("0000".equals(jsonObject.get("code").toString())){
+            Object data = jsonObject.get("data");
+            SchoolMajorGroup schoolMajorGroup = JSON.parseObject(data.toString(), SchoolMajorGroup.class);
+            List<SchoolMajorFeature> nation_feature = schoolMajorGroup.getNation_feature();
+            if(nation_feature.size()>0){
+                schoolMajorFeatureService.deleteSchoolMajorFeature(school_id);
+                schoolMajorFeatureService.addSchoolMajorFeatureList(nation_feature);
+            }
+            List<SchoolMajorType> special = schoolMajorGroup.getSpecial();
+            for(SchoolMajorType schoolMajorType:special){
+                schoolMajorType.setSchool_id(school_id);
+                //
+                schoolMajorTyperService.deleteSchoolMajorType(schoolMajorType);
+                schoolMajorTyperService.addSchoolMajorType(schoolMajorType);
+                //
+                for(SchoolMajor schoolMajor:schoolMajorType.getSpecial()){
+                    schoolMajorService.deleteSchoolMajor(schoolMajor);
+                }
+                schoolMajorService.addSchoolMajorList(schoolMajorType.getSpecial());
+                updateSchoolMajorInfo(schoolMajorType.getSpecial());
+            }
+        }else{
+            throw new VisitException("未获取到数据！");
+        }
+    }
+```
 
+## 爬取所有省份高校的分数线
+### 1.分析获取到真实url地址
+![alt 省份高校的分数线](img/SCHOOL_ENROLL.png)
+```
+真实url地址如下,99为高校id
+https://static-data.gaokao.cn/www/2.0/school/99/dic/provincescore.json
+```
+![alt 省份高校的分数线](img/SCHOOL_ENROLL_INFO.png)
+```
+真实url地址如下
+https://static-data.gaokao.cn/www/2.0/schoolprovinceindex/2022/99/51/1/1.json
+```
+
+### 2.爬取所有省份高校的分数线
+核心代码如下
+```
+    public static void main(String[] args) throws IOException {
+        String school_id="99";
+        Map<String, String> urlMap = analysisSchoolEnrollAllUrl();
+        String url = urlMap.get("urlStart")+school_id+urlMap.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if("0000".equals(jsonObject.get("code").toString())){
+            JSONObject data = JSONObject.parseObject(jsonObject.get("data").toString());
+            JSONObject newsdata = JSONObject.parseObject(data.get("newsdata").toString());
+            //省份
+            List<Integer> provinces = JSON.parseObject(newsdata.get("province").toString(), List.class);
+            //省份对应的年
+            Map<String,List> years = JSON.parseObject(newsdata.get("year").toString(), Map.class);
+            //省份对应的type
+            Map<String,List> types = JSON.parseObject(newsdata.get("type").toString(), Map.class);
+
+            for(Integer provinceId:provinces){
+                List<Integer> province_years = years.get(""+provinceId);
+                for(Integer province_year:province_years){
+                    List<Integer> type = types.get(provinceId + "_" + province_year);
+                    for(Integer t:type){
+                        String url1="https://static-data.gaokao.cn/www/2.0/schoolprovinceindex/"+province_year+"/"+school_id+"/"+provinceId+"/"+t+"/1.json";
+                        //遍历得到高校所有的省份,科目的录取线url1
+                        System.out.println(url1);
+
+                    }
+                }
+            }
+        }
+    }
+```
 

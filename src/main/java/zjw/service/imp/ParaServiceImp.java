@@ -83,4 +83,21 @@ public class ParaServiceImp implements ParaService {
         SqlSessionFactoryUtil.commitAndClose(sqlSession);
         return para;
     }
+
+
+    /**
+     * @Title finaSchoolMajorInfoUrl
+     * @description 查询获取高校所有省录取线(school_id学校id)Url
+     * @author 郑洁文
+     * @date 2022年8月1２日 下午16:04
+     * @return
+     */
+    public Para finaSchoolEnrollAllUrl(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        ParaMapper mapper = sqlSession.getMapper(ParaMapper.class);
+        Para para = mapper.finaSchoolEnrollAllUrl();
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return para;
+    }
+
 }

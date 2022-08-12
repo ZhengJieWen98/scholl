@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.SchoolAdmissionLineMapper">
+
+    <insert id="addSchoolAdmissionLineList" parameterType="list">
+        insert into school_admission_line(province_id,year,school_id,type,min,min_section,proscore,zslx_name,local_batch_name) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.province_id},#{item.year},#{item.school_id},#{item.type},#{item.min},#{item.min_section},#{item.proscore},#{item.zslx_name},#{item.local_batch_name})
+        </foreach>
+    </insert>
+
+
+</mapper>
