@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    根标签mapper，一个映射配置文件，就对应一个dao接口
+    根标签的namespace属性的值就对应dao接口的全限定名
+-->
+<mapper namespace="zjw.mapper.SchoolInfoMapper">
+
+    <insert id="addSchoolInfo" parameterType="schoolInfo">
+        insert into
+        school_info
+        (add_time,
+        address,
+        belong,
+        city_name,
+        content,
+        create_date,
+        dual_class_name,
+        email,
+        f211,
+        f985,
+        level_name,
+        name,
+        school_id,
+        nature_name,
+        phone,
+        province_id,
+        province_name,
+        school_nature_name,
+        type_name,
+        school_site,
+        site,
+        logo,
+        area)
+        values
+        (#{add_time},
+        #{address},
+        #{belong},
+        #{city_name},
+        #{content},
+        #{create_date},
+        #{dual_class_name},
+        #{email},
+        #{f211},
+        #{f985},
+        #{level_name},
+        #{name},
+        #{school_id},
+        #{nature_name},
+        #{phone},
+        #{province_id},
+        #{province_name},
+        #{school_nature_name},
+        #{type_name},
+        #{school_site},
+        #{site},
+        #{logo},
+        #{area})
+    </insert>
+
+
+
+</mapper>

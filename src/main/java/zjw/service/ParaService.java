@@ -85,4 +85,13 @@ public interface ParaService {
      * @return
      */
     Para finaProvinceGaoKaoInfoUrl();
+
+    /**
+     * @Title finaSchoolInfoUrl
+     * @description 获取高校详情信息,根据school_id查询(school_id具体的id)
+     * @author 郑洁文
+     * @date 2022年8月16日 下午15:03
+     * @return
+     */
+    Para finaSchoolInfoUrl();
 }

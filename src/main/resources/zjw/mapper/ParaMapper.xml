@@ -44,4 +44,8 @@
         select * from para where PARACLASS = "PROVINCE_GAOKAO_INFO"
     </select>
 
+    <select id="finaSchoolInfoUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_INFO"
+    </select>
+
 </mapper>

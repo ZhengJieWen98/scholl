@@ -34,6 +34,7 @@ public class UpdateSchoolUtils {
     private static SchoolZsjhServiceImp schoolZsjhService = new SchoolZsjhServiceImp();
     private static SchoolMajorLineService schoolMajorLineService = new SchoolMajorLineServiceImp();
     private static ProvinceGaoKaoInfoService provinceGaoKaoInfoService = new ProvinceGaoKaoInfoServiceImp();
+    private static SchoolInfoService schoolInfoService = new SchoolInfoServiceImp();
     private static Map<String,String> schoolNewsUrlMap = null;
     private static Map<String,String> schoolNewsInfoUrlMap = null;
     private static Map<String,String> schoolMajorUrlMap = null;
@@ -42,6 +43,7 @@ public class UpdateSchoolUtils {
     private static Map<String,String> schoolZSJHUrl = null;
     private static Map<String,String> schoolMajorLineUrl = null;
     private static Map<String,String> proinceGaoKaoInfoUrl = null;
+    private static Map<String,String> schoolInfoUrlUrl = null;
 
     /**
      * @Title updateSchool
@@ -690,6 +692,20 @@ public class UpdateSchoolUtils {
         return proinceGaoKaoInfoUrl;
     }
 
+    /**
+     * @Title analysisSchoolMajorUrl
+     * @description 解析高校详情信息url
+     * @author 郑洁文
+     * @date 2022年8月16日 下午15:07
+     */
+    public static Map<String,String> analysisSchoolInfoUrl(){
+        if(schoolInfoUrlUrl==null){
+            Para SchoolMajorUrlPara = paraService.finaSchoolInfoUrl();
+            schoolInfoUrlUrl=analysis(SchoolMajorUrlPara.getPARAVALUE());
+        }
+        return schoolInfoUrlUrl;
+    }
+
     public static Map<String,String> analysis(String url){
         String[] split = url.split("school_id");
         Map<String,String> map = new HashMap<String, String>();
@@ -791,9 +807,51 @@ public class UpdateSchoolUtils {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        updateProvinceGaoKaoInfo();
-
+    /**
+     * @Title updateProvinceGaoKaoInfo
+     * @description 更新所有省份高考信息
+     * @author 郑洁文
+     * @date 2022年8月16日 下午14:20
+     */
+    public static void updateSchoolInfo(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 10;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            String school_id = allSchoolId.get(j);
+                            Map<String, String> urlMap = analysisSchoolInfoUrl();
+                            String url = urlMap.get("urlStart") + school_id + urlMap.get("urlEnd");
+                            String s = MyHttpClient.fetchHtmlSync(url);
+                            JSONObject jsonObject = JSONObject.parseObject(s);
+                            if("0000".equals(jsonObject.get("code").toString())){
+                                Object data = jsonObject.get("data");
+                                SchoolInfo schoolInfo = JSON.parseObject(data.toString(), SchoolInfo.class);
+                                schoolInfo.setLogo("https://static-data.gaokao.cn/upload/logo/"+school_id+".jpg");
+                                schoolInfoService.addSchoolInfo(schoolInfo);
+                            }
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
+        }
 
     }
+    
+
+    public static void main(String[] args) throws IOException {
+
+    }
+
 }
