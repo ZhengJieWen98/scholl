@@ -130,4 +130,19 @@ public class ParaServiceImp implements ParaService {
         return para;
     }
 
+    /**
+     * @Title finaProvinceGaoKaoInfoUrl
+     * @description 获取省份高考咨询Url
+     * @author 郑洁文
+     * @date 2022年8月16日 上午10:59
+     * @return
+     */
+    public Para finaProvinceGaoKaoInfoUrl(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        ParaMapper mapper = sqlSession.getMapper(ParaMapper.class);
+        Para para = mapper.finaProvinceGaoKaoInfoUrl();
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return para;
+    }
+
 }

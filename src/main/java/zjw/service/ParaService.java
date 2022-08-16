@@ -76,4 +76,13 @@ public interface ParaService {
      * @return
      */
     Para finaSchoolMajorLineUrl();
+
+    /**
+     * @Title finaProvinceGaoKaoInfoUrl
+     * @description 获取省份高考咨询Url
+     * @author 郑洁文
+     * @date 2022年8月16日 上午10:59
+     * @return
+     */
+    Para finaProvinceGaoKaoInfoUrl();
 }

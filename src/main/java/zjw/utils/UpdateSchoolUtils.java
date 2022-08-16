@@ -8,6 +8,7 @@ import zjw.exception.VisitException;
 import zjw.mapper.BatchMapper;
 import zjw.mapper.ParaMapper;
 import zjw.pojo.*;
+import zjw.pojo.group.ProvinceGaoKao;
 import zjw.pojo.group.SchoolMajorGroup;
 import zjw.service.*;
 import zjw.service.imp.*;
@@ -32,6 +33,7 @@ public class UpdateSchoolUtils {
     private static SchoolAdmissionLineService schoolAdmissionLineService = new SchoolAdmissionLineServiceImpl();
     private static SchoolZsjhServiceImp schoolZsjhService = new SchoolZsjhServiceImp();
     private static SchoolMajorLineService schoolMajorLineService = new SchoolMajorLineServiceImp();
+    private static ProvinceGaoKaoInfoService provinceGaoKaoInfoService = new ProvinceGaoKaoInfoServiceImp();
     private static Map<String,String> schoolNewsUrlMap = null;
     private static Map<String,String> schoolNewsInfoUrlMap = null;
     private static Map<String,String> schoolMajorUrlMap = null;
@@ -39,6 +41,7 @@ public class UpdateSchoolUtils {
     private static Map<String,String> schoolEnrollAllUrlMap = null;
     private static Map<String,String> schoolZSJHUrl = null;
     private static Map<String,String> schoolMajorLineUrl = null;
+    private static Map<String,String> proinceGaoKaoInfoUrl = null;
 
     /**
      * @Title updateSchool
@@ -670,6 +673,23 @@ public class UpdateSchoolUtils {
         return schoolMajorLineUrl;
     }
 
+    /**
+     * @Title analysisProvinceGaoKaoInfoUrl
+     * @description 解析高校所有省招生计划urlPROVINCE_GAOKAO_INFO
+     * @author 郑洁文
+     * @date 2022年8月16日 下午13:15
+     */
+    public static Map<String,String> analysisProvinceGaoKaoInfoUrl(){
+        if(proinceGaoKaoInfoUrl==null){
+            Para SchoolMajorUrlPara = paraService.finaProvinceGaoKaoInfoUrl();
+            String[] split = SchoolMajorUrlPara.getPARAVALUE().split("provinceId");
+            proinceGaoKaoInfoUrl = new HashMap<String, String>();
+            proinceGaoKaoInfoUrl.put("urlStart",split[0]);
+            proinceGaoKaoInfoUrl.put("urlEnd",split[1]);
+        }
+        return proinceGaoKaoInfoUrl;
+    }
+
     public static Map<String,String> analysis(String url){
         String[] split = url.split("school_id");
         Map<String,String> map = new HashMap<String, String>();
@@ -748,7 +768,32 @@ public class UpdateSchoolUtils {
         }
     }
 
+    /**
+     * @Title updateProvinceGaoKaoInfo
+     * @description 更新所有省份高考信息
+     * @author 郑洁文
+     * @date 2022年8月16日 下午14:20
+     */
+    public static void updateProvinceGaoKaoInfo() throws IOException {
+        List<String> provinceIDs = provinceGaoKaoInfoService.selectProvinceIdAll();
+        for(String provinceID:provinceIDs){
+            Map<String, String> urlMap = analysisProvinceGaoKaoInfoUrl();
+            String url = urlMap.get("urlStart") + provinceID + urlMap.get("urlEnd");
+            String s = MyHttpClient.fetchHtmlSync(url);
+            JSONObject jsonObject = JSONObject.parseObject(s);
+            Object lists = jsonObject.get("lists");
+            JSONObject listsJsonObject = JSONObject.parseObject(lists.toString());
+            List<ProvinceGaoKao> provinceGaoKaos = JSON.parseArray(listsJsonObject.get("1").toString(), ProvinceGaoKao.class);
+            ProvinceGaoKao provinceGaoKao = provinceGaoKaos.get(0);
+            List<ProvinceGaoKaoInfo> list = provinceGaoKao.getArticle();
+            for(ProvinceGaoKaoInfo p:list)p.setProvince_id(provinceID);
+            provinceGaoKaoInfoService.addProvinceGaoKaoInfoList(list);
+        }
+    }
+
     public static void main(String[] args) throws IOException {
-        updateSchoolMajorLine();
+        updateProvinceGaoKaoInfo();
+
+
     }
 }

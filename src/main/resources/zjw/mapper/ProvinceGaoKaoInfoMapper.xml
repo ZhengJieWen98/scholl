@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.ProvinceGaoKaoInfoMapper">
+
+    <insert id="addProvinceGaoKaoInfoList" parameterType="list">
+        insert into province_gaokao_info(
+        province_id,
+        add_time,
+        docsource,
+        title,
+        url)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.province_id},
+            #{item.add_time},
+            #{item.docsource},
+            #{item.title},
+            #{item.url})
+        </foreach>
+    </insert>
+
+    <select id="selectProvinceIdAll" resultType="string">
+        select id from province
+    </select>
+
+
+</mapper>
