@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zjw.mapper.SchoolMajorLineMapper">
+
+    <insert id="addSchoolMajorLineList" parameterType="list">
+        insert into school_major_line(
+        average,
+        batch,
+        local_batch_name,
+        first_km,
+        info,
+        level1,
+        level1_name,
+        level2,
+        level2_name,
+        level3,
+        level3_name,
+        max,
+        min,
+        min_section,
+        province,
+        school_id,
+        sg_fxk,
+        sg_info,
+        sg_name,
+        sg_sxk,
+        sg_type,
+        sp_fxk,
+        sp_info,
+        sp_sxk,
+        sp_type,
+        spe_id,
+        special_group,
+        special_id,
+        spname,
+        type,
+        zslx,
+        zslx_name,
+        year)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.average},
+            #{item.batch},
+            #{item.local_batch_name},
+            #{item.first_km},
+            #{item.info},
+            #{item.level1},
+            #{item.level1_name},
+            #{item.level2},
+            #{item.level2_name},
+            #{item.level3},
+            #{item.level3_name},
+            #{item.max},
+            #{item.min},
+            #{item.min_section},
+            #{item.province},
+            #{item.school_id},
+            #{item.sg_fxk},
+            #{item.sg_info},
+            #{item.sg_name},
+            #{item.sg_sxk},
+            #{item.sg_type},
+            #{item.sp_fxk},
+            #{item.sp_info},
+            #{item.sp_sxk},
+            #{item.sp_type},
+            #{item.spe_id},
+            #{item.special_group},
+            #{item.special_id},
+            #{item.spname},
+            #{item.type},
+            #{item.zslx},
+            #{item.zslx_name},
+            #{item.year})
+        </foreach>
+    </insert>
+
+</mapper>

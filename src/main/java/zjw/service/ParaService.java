@@ -67,4 +67,13 @@ public interface ParaService {
      * @return
      */
     Para finaSchoolZSJHUrl();
+
+    /**
+     * @Title finaSchoolMajorLineUrl
+     * @description 查询获取高校所有省专业录取线(school_id学校id)Url
+     * @author 郑洁文
+     * @date 2022年8月16日 上午9:31
+     * @return
+     */
+    Para finaSchoolMajorLineUrl();
 }

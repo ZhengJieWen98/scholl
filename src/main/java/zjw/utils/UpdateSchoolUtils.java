@@ -31,12 +31,14 @@ public class UpdateSchoolUtils {
     private static SchoolMajorInfoService schoolMajorInfoService = new SchoolMajorInfoServiceImp();
     private static SchoolAdmissionLineService schoolAdmissionLineService = new SchoolAdmissionLineServiceImpl();
     private static SchoolZsjhServiceImp schoolZsjhService = new SchoolZsjhServiceImp();
+    private static SchoolMajorLineService schoolMajorLineService = new SchoolMajorLineServiceImp();
     private static Map<String,String> schoolNewsUrlMap = null;
     private static Map<String,String> schoolNewsInfoUrlMap = null;
-    private static Map<String,String> SchoolMajorUrlMap = null;
-    private static Map<String,String> SchoolMajorInfoUrlMap = null;
-    private static Map<String,String> SchoolEnrollAllUrlMap = null;
-    private static Map<String,String> SchoolZSJHUrl = null;
+    private static Map<String,String> schoolMajorUrlMap = null;
+    private static Map<String,String> schoolMajorInfoUrlMap = null;
+    private static Map<String,String> schoolEnrollAllUrlMap = null;
+    private static Map<String,String> schoolZSJHUrl = null;
+    private static Map<String,String> schoolMajorLineUrl = null;
 
     /**
      * @Title updateSchool
@@ -469,6 +471,91 @@ public class UpdateSchoolUtils {
         }
     }
 
+
+    /**
+     * @Title updateSchoolMajorLine
+     * @description 更新高校专业录取线
+     * @author 郑洁文
+     * @date 2022年8月16日 上午10:30
+     */
+    public static void updateSchoolMajorLine(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 5;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            String school_id = allSchoolId.get(j);
+                            updateSchoolMajorLine(school_id);
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }).start();
+        }
+    }
+    /**
+     * @Title updateSchoolMajorLine
+     * @description 更新高校专业录取线
+     * @author 郑洁文
+     * @date 2022年8月16日 上午10:29
+     * @param school_id
+     */
+    public static void updateSchoolMajorLine(String school_id) throws IOException {
+        Map<String, String> urlMap = analysisSchoolMajorLineUrl();
+        String url = urlMap.get("urlStart")+school_id+urlMap.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if ("0000".equals(jsonObject.get("code").toString())) {
+            JSONObject data = JSONObject.parseObject(jsonObject.get("data").toString());
+            JSONObject newsdata = JSONObject.parseObject(data.get("newsdata").toString());
+            //省份
+            List<Integer> provinces = JSON.parseObject(newsdata.get("province").toString(), List.class);
+            //省份对应的年
+            Map<String, List> years = JSON.parseObject(newsdata.get("year").toString(), Map.class);
+            //省份对应的type
+            Map<String, List> types = JSON.parseObject(newsdata.get("type").toString(), Map.class);
+            //批次
+            Map<String, List> batchs = JSON.parseObject(newsdata.get("batch").toString(), Map.class);
+            for (Integer provinceId : provinces) {
+                List<Integer> province_years = years.get("" + provinceId);
+                for (Integer province_year : province_years) {
+                    List<Integer> type = types.get(provinceId + "_" + province_year);
+                    for (Integer t : type) {
+                        List<Integer> batch = batchs.get(provinceId + "_" + province_year + "_" + t);
+                        for(Integer b:batch){
+                            Integer pageCount=1;//默认一页,每页10条数据,可根据返回值的numFound总条数来判断有多少条
+                            for(int pageNow=1;pageNow<=pageCount;pageNow++){
+                                //遍历得到高校所有的年份,省份,科目,批次的招生计划url1
+                                String url1 = "https://static-data.gaokao.cn/www/2.0/schoolspecialindex/"+province_year+"/"+school_id+"/"+provinceId+"/"+t+"/"+b+"/"+pageNow+".json";
+                                String s1 = MyHttpClient.fetchHtmlSync(url1);
+                                JSONObject jsonObject1 = JSONObject.parseObject(s1);
+                                if ("0000".equals(jsonObject1.get("code").toString())) {
+                                    JSONObject data1 = JSONObject.parseObject(jsonObject1.get("data").toString());
+                                    Integer numFound = Integer.parseInt(data1.get("numFound").toString());
+                                    pageCount=numFound%10==0?numFound/10:numFound/10+1;
+                                    List<SchoolMajorLine> item = JSON.parseArray(data1.get("item").toString(), SchoolMajorLine.class);
+                                    for(SchoolMajorLine schoolMajorLine:item)schoolMajorLine.setYear(""+province_year);
+                                    schoolMajorLineService.addSchoolMajorLineList(item);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @Title analysisSchoolUrl
      * @description 解析高校url地址
@@ -520,11 +607,11 @@ public class UpdateSchoolUtils {
      * @date 2022年8月11日 下午15:01
      */
     public static Map<String,String> analysisSchoolMajorUrl(){
-        if(SchoolMajorUrlMap==null){
+        if(schoolMajorUrlMap==null){
             Para SchoolMajorUrlPara = paraService.finaSchoolMajorUrl();
-            SchoolMajorUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
+            schoolMajorUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
         }
-        return SchoolMajorUrlMap;
+        return schoolMajorUrlMap;
     }
 
     /**
@@ -534,11 +621,11 @@ public class UpdateSchoolUtils {
      * @date 2022年8月11日 下午16:50
      */
     public static Map<String,String> analysisSchoolMajorInfoUrl(){
-        if(SchoolMajorInfoUrlMap==null){
+        if(schoolMajorInfoUrlMap==null){
             Para SchoolMajorUrlPara = paraService.finaSchoolMajorInfoUrl();
-            SchoolMajorInfoUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
+            schoolMajorInfoUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
         }
-        return SchoolMajorInfoUrlMap;
+        return schoolMajorInfoUrlMap;
     }
 
     /**
@@ -548,11 +635,11 @@ public class UpdateSchoolUtils {
      * @date 2022年8月12日 下午16:10
      */
     public static Map<String,String> analysisSchoolEnrollAllUrl(){
-        if(SchoolEnrollAllUrlMap==null){
+        if(schoolEnrollAllUrlMap==null){
             Para SchoolMajorUrlPara = paraService.finaSchoolEnrollAllUrl();
-            SchoolEnrollAllUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
+            schoolEnrollAllUrlMap=analysis(SchoolMajorUrlPara.getPARAVALUE());
         }
-        return SchoolEnrollAllUrlMap;
+        return schoolEnrollAllUrlMap;
     }
 
     /**
@@ -562,11 +649,25 @@ public class UpdateSchoolUtils {
      * @date 2022年8月15日 下午15:28
      */
     public static Map<String,String> analysisSchoolZSJHUrl(){
-        if(SchoolZSJHUrl==null){
+        if(schoolZSJHUrl==null){
             Para SchoolMajorUrlPara = paraService.finaSchoolZSJHUrl();
-            SchoolZSJHUrl=analysis(SchoolMajorUrlPara.getPARAVALUE());
+            schoolZSJHUrl=analysis(SchoolMajorUrlPara.getPARAVALUE());
         }
-        return SchoolZSJHUrl;
+        return schoolZSJHUrl;
+    }
+
+    /**
+     * @Title analysisSchoolMajorUrl
+     * @description 解析高校所有省招生计划url
+     * @author 郑洁文
+     * @date 2022年8月16日 上午9:36
+     */
+    public static Map<String,String> analysisSchoolMajorLineUrl(){
+        if(schoolMajorLineUrl==null){
+            Para SchoolMajorUrlPara = paraService.finaSchoolMajorLineUrl();
+            schoolMajorLineUrl=analysis(SchoolMajorUrlPara.getPARAVALUE());
+        }
+        return schoolMajorLineUrl;
     }
 
     public static Map<String,String> analysis(String url){
@@ -648,7 +749,6 @@ public class UpdateSchoolUtils {
     }
 
     public static void main(String[] args) throws IOException {
-
-
+        updateSchoolMajorLine();
     }
 }

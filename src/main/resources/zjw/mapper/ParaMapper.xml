@@ -36,4 +36,8 @@
         select * from para where PARACLASS = "SCHOOL_ZSJH"
     </select>
 
+    <select id="finaSchoolMajorLineUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_MAJOR_LINE"
+    </select>
+
 </mapper>
