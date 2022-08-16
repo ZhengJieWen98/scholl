@@ -24,4 +24,6 @@ public class SchoolAdmissionLine {
     private String proscore;
     private String zslx_name;
     private String local_batch_name;
+    private String batch;
+
 }

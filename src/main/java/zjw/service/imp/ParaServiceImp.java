@@ -100,4 +100,19 @@ public class ParaServiceImp implements ParaService {
         return para;
     }
 
+    /**
+     * @Title finaSchoolZSJHUrl
+     * @description 查询获取高校所有省招生计划(school_id学校id)Url
+     * @author 郑洁文
+     * @date 2022年8月15日 下午15:25
+     * @return
+     */
+    public Para finaSchoolZSJHUrl(){
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+        ParaMapper mapper = sqlSession.getMapper(ParaMapper.class);
+        Para para = mapper.finaSchoolZSJHUrl();
+        SqlSessionFactoryUtil.commitAndClose(sqlSession);
+        return para;
+    }
+
 }

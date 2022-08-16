@@ -3,13 +3,17 @@ package zjw.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import org.apache.ibatis.session.SqlSession;
 import zjw.exception.VisitException;
+import zjw.mapper.BatchMapper;
+import zjw.mapper.ParaMapper;
 import zjw.pojo.*;
 import zjw.pojo.group.SchoolMajorGroup;
 import zjw.service.*;
 import zjw.service.imp.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +30,13 @@ public class UpdateSchoolUtils {
     private static SchoolMajorService schoolMajorService = new SchoolMajorServiceImp();
     private static SchoolMajorInfoService schoolMajorInfoService = new SchoolMajorInfoServiceImp();
     private static SchoolAdmissionLineService schoolAdmissionLineService = new SchoolAdmissionLineServiceImpl();
+    private static SchoolZsjhServiceImp schoolZsjhService = new SchoolZsjhServiceImp();
     private static Map<String,String> schoolNewsUrlMap = null;
     private static Map<String,String> schoolNewsInfoUrlMap = null;
     private static Map<String,String> SchoolMajorUrlMap = null;
     private static Map<String,String> SchoolMajorInfoUrlMap = null;
     private static Map<String,String> SchoolEnrollAllUrlMap = null;
+    private static Map<String,String> SchoolZSJHUrl = null;
 
     /**
      * @Title updateSchool
@@ -379,6 +385,91 @@ public class UpdateSchoolUtils {
     }
 
     /**
+     * @Title updateSchoolZsjh
+     * @description 更新高校招生计划
+     * @author 郑洁文
+     * @date 2022年8月15日 下午17:56
+     */
+    public static void updateSchoolZsjh(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 5;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            String school_id = allSchoolId.get(j);
+                            updateSchoolZsjh(school_id);
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * @Title updateSchoolZsjh
+     * @description 更新高校招生计划
+     * @author 郑洁文
+     * @date 2022年8月15日 下午17:56
+     * @param school_id
+     */
+    public static void updateSchoolZsjh(String school_id) throws IOException {
+        Map<String, String> urlMap = analysisSchoolZSJHUrl();
+        String url = urlMap.get("urlStart")+school_id+urlMap.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if ("0000".equals(jsonObject.get("code").toString())) {
+            JSONObject data = JSONObject.parseObject(jsonObject.get("data").toString());
+            JSONObject newsdata = JSONObject.parseObject(data.get("newsdata").toString());
+            //省份
+            List<Integer> provinces = JSON.parseObject(newsdata.get("province").toString(), List.class);
+            //省份对应的年
+            Map<String, List> years = JSON.parseObject(newsdata.get("year").toString(), Map.class);
+            //省份对应的type
+            Map<String, List> types = JSON.parseObject(newsdata.get("type").toString(), Map.class);
+            //批次
+            Map<String, List> batchs = JSON.parseObject(newsdata.get("batch").toString(), Map.class);
+            for (Integer provinceId : provinces) {
+                List<Integer> province_years = years.get("" + provinceId);
+                for (Integer province_year : province_years) {
+                    List<Integer> type = types.get(provinceId + "_" + province_year);
+                    for (Integer t : type) {
+                        List<Integer> batch = batchs.get(provinceId + "_" + province_year + "_" + t);
+                        for(Integer b:batch){
+                            Integer pageCount=1;//默认一页,每页10条数据,可根据返回值的numFound总条数来判断有多少条
+                            for(int pageNow=1;pageNow<=pageCount;pageNow++){
+                                //遍历得到高校所有的年份,省份,科目,批次的招生计划url1
+                                String url1 = "https://static-data.gaokao.cn/www/2.0/schoolplanindex/"+province_year+"/"+school_id+"/"+provinceId+"/"+t+"/"+b+"/"+pageNow+".json";
+                                String s1 = MyHttpClient.fetchHtmlSync(url1);
+                                JSONObject jsonObject1 = JSONObject.parseObject(s1);
+                                if ("0000".equals(jsonObject1.get("code").toString())) {
+                                    JSONObject data1 = JSONObject.parseObject(jsonObject1.get("data").toString());
+                                    Integer numFound = Integer.parseInt(data1.get("numFound").toString());
+                                    pageCount=numFound%10==0?numFound/10:numFound/10+1;
+                                    List<SchoolZsjh> item = JSON.parseArray(data1.get("item").toString(), SchoolZsjh.class);
+                                    for(SchoolZsjh schoolZsjh:item)schoolZsjh.setYear(""+province_year);
+                                    schoolZsjhService.addSchoolZsjhList(item);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * @Title analysisSchoolUrl
      * @description 解析高校url地址
      * @author 郑洁文
@@ -464,6 +555,20 @@ public class UpdateSchoolUtils {
         return SchoolEnrollAllUrlMap;
     }
 
+    /**
+     * @Title analysisSchoolMajorUrl
+     * @description 解析高校所有省招生计划url
+     * @author 郑洁文
+     * @date 2022年8月15日 下午15:28
+     */
+    public static Map<String,String> analysisSchoolZSJHUrl(){
+        if(SchoolZSJHUrl==null){
+            Para SchoolMajorUrlPara = paraService.finaSchoolZSJHUrl();
+            SchoolZSJHUrl=analysis(SchoolMajorUrlPara.getPARAVALUE());
+        }
+        return SchoolZSJHUrl;
+    }
+
     public static Map<String,String> analysis(String url){
         String[] split = url.split("school_id");
         Map<String,String> map = new HashMap<String, String>();
@@ -472,7 +577,78 @@ public class UpdateSchoolUtils {
         return map;
     }
 
+    /**
+     * @Title updateBatch
+     * @description 更新批次信息
+     * @author 郑洁文
+     * @date 2022年8月15日 下午15:30
+     */
+    public static void updateBatch(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 10;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            String school_id = allSchoolId.get(j);
+                            Map<String, String> urlMap = analysisSchoolEnrollAllUrl();
+                            String url = urlMap.get("urlStart") + school_id + urlMap.get("urlEnd");
+                            String s = MyHttpClient.fetchHtmlSync(url);
+                            JSONObject jsonObject = JSONObject.parseObject(s);
+                            if ("0000".equals(jsonObject.get("code").toString())) {
+                                JSONObject data = JSONObject.parseObject(jsonObject.get("data").toString());
+                                JSONObject newsdata = JSONObject.parseObject(data.get("newsdata").toString());
+                                //省份
+                                List<Integer> provinces = JSON.parseObject(newsdata.get("province").toString(), List.class);
+                                //省份对应的年
+                                Map<String, List> years = JSON.parseObject(newsdata.get("year").toString(), Map.class);
+                                //省份对应的type
+                                Map<String, List> types = JSON.parseObject(newsdata.get("type").toString(), Map.class);
+                                for (Integer provinceId : provinces) {
+                                    List<Integer> province_years = years.get("" + provinceId);
+                                    for (Integer province_year : province_years) {
+                                        List<Integer> type = types.get(provinceId + "_" + province_year);
+                                        for (Integer t : type) {
+                                            String url1 = "https://static-data.gaokao.cn/www/2.0/schoolprovinceindex/" + province_year + "/" + school_id + "/" + provinceId + "/" + t + "/1.json";
+                                            //遍历得到高校所有的省份,科目的录取线url1
+                                            String s1 = MyHttpClient.fetchHtmlSync(url1);
+                                            JSONObject jsonObject1 = JSONObject.parseObject(s1);
+                                            if ("0000".equals(jsonObject1.get("code").toString())) {
+                                                JSONObject data1 = JSONObject.parseObject(jsonObject1.get("data").toString());
+                                                List<SchoolAdmissionLine> list = JSON.parseArray(data1.get("item").toString(), SchoolAdmissionLine.class);
+                                                for (SchoolAdmissionLine schoolAdmissionLine : list) {
+                                                    SqlSession sqlSession = SqlSessionFactoryUtil.openSqlSession();
+                                                    BatchMapper mapper = sqlSession.getMapper(BatchMapper.class);
+                                                    String s2 = mapper.selectBatch(schoolAdmissionLine.getBatch());
+                                                    if(s2==null||!s2.equals(schoolAdmissionLine.getBatch())){
+                                                        int i = mapper.addBatch(schoolAdmissionLine.getBatch(), schoolAdmissionLine.getLocal_batch_name());
+                                                        if(i>0)SqlSessionFactoryUtil.commitAndClose(sqlSession);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
+        }
+    }
+
     public static void main(String[] args) throws IOException {
-        updateSchoolAdmissionLine();
+
+
     }
 }

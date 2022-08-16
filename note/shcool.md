@@ -382,4 +382,68 @@ https://static-data.gaokao.cn/www/2.0/schoolprovinceindex/2022/99/51/1/1.json
         }
     }
 ```
+## 爬取所有省份高校的招生计划
+### 1.分析获取到真实url地址
+![alt 招生计划](img/school_zsjh.jpg)
+```
+99为高校id
+https://static-data.gaokao.cn/www/2.0/school/99/dic/specialplan.json
+```
+![alt 招生计划](img/school_zsjh_info.jpg)
+```
+年份/school_id/省份id/科目id/批次id/页数.json
+https://static-data.gaokao.cn/www/2.0/schoolplanindex/2022/99/51/1/7/1.json
+```
+### 2.爬取所有省份高校的分数线
+核心代码如下
+```
+        String school_id = "99";
+        Map<String, String> urlMap = analysisSchoolZSJHUrl();
+        String url = urlMap.get("urlStart")+school_id+urlMap.get("urlEnd");
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if ("0000".equals(jsonObject.get("code").toString())) {
+            JSONObject data = JSONObject.parseObject(jsonObject.get("data").toString());
+            JSONObject newsdata = JSONObject.parseObject(data.get("newsdata").toString());
+            //省份
+            List<Integer> provinces = JSON.parseObject(newsdata.get("province").toString(), List.class);
+            //省份对应的年
+            Map<String, List> years = JSON.parseObject(newsdata.get("year").toString(), Map.class);
+            //省份对应的type
+            Map<String, List> types = JSON.parseObject(newsdata.get("type").toString(), Map.class);
+            //批次
+            Map<String, List> batchs = JSON.parseObject(newsdata.get("batch").toString(), Map.class);
+
+            for (Integer provinceId : provinces) {
+                List<Integer> province_years = years.get("" + provinceId);
+                for (Integer province_year : province_years) {
+                    List<Integer> type = types.get(provinceId + "_" + province_year);
+                    for (Integer t : type) {
+                        List<Integer> batch = batchs.get(provinceId + "_" + province_year + "_" + t);
+                        for(Integer b:batch){
+                            Integer pageCount=1;//默认一页,每页10条数据,可根据返回值的numFound总条数来判断有多少条
+                            for(int pageNow=1;pageNow<=pageCount;pageNow++){
+                                //遍历得到高校所有的年份,省份,科目,批次的招生计划url1
+                                String url1 = "https://static-data.gaokao.cn/www/2.0/schoolplanindex/"+province_year+"/"+school_id+"/"+provinceId+"/"+t+"/"+b+"/"+pageNow+".json";
+                                System.out.println(url1);
+                                String s1 = MyHttpClient.fetchHtmlSync(url1);
+                                JSONObject jsonObject1 = JSONObject.parseObject(s1);
+                                if ("0000".equals(jsonObject1.get("code").toString())) {
+                                    JSONObject data1 = JSONObject.parseObject(jsonObject1.get("data").toString());
+                                    Integer numFound = Integer.parseInt(data1.get("numFound").toString());
+                                    pageCount=numFound%10==0?numFound/10:numFound/10+1;
+                                    List<SchoolZsjh> item = JSON.parseArray(data1.get("item").toString(), SchoolZsjh.class);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+```
+
+
+
+
 

@@ -32,4 +32,8 @@
         select * from para where PARACLASS = "SCHOOL_ENROLL_ALL"
     </select>
 
+    <select id="finaSchoolZSJHUrl" resultType="para">
+        select * from para where PARACLASS = "SCHOOL_ZSJH"
+    </select>
+
 </mapper>
