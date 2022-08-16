@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.session.SqlSession;
 import zjw.exception.VisitException;
 import zjw.mapper.BatchMapper;
-import zjw.mapper.ParaMapper;
 import zjw.pojo.*;
 import zjw.pojo.group.ProvinceGaoKao;
 import zjw.pojo.group.SchoolMajorGroup;
@@ -14,11 +13,9 @@ import zjw.service.*;
 import zjw.service.imp.*;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UpdateSchoolUtils {
@@ -848,10 +845,36 @@ public class UpdateSchoolUtils {
         }
 
     }
-    
+
+    /**
+     * @Title updateSchoolImg
+     * @description 更新所有省份高考图片
+     * @author 郑洁文
+     * @date 2022年8月16日 下午17:51
+     */
+    public static void updateSchoolImg(){
+        SchoolImgService schoolImgService = new SchoolImgServiceImp();
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        for(int i=0;i<allSchoolId.size();i++){
+            String school_id = allSchoolId.get(i);
+            String url=" https://static-data.gaokao.cn/www/2.0/school/"+school_id+"/img/list.json";
+            String s = null;
+            try {
+                s = MyHttpClient.fetchHtmlSync(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(s.equals(""))continue;
+            JSONObject jsonObject = JSONObject.parseObject(s);
+            if("0000".equals(jsonObject.get("code").toString())){
+                List<SchoolImg> data = JSON.parseArray(jsonObject.get("data").toString(), SchoolImg.class);
+                schoolImgService.addSchoolImgList(data);
+            }
+        }
+    }
 
     public static void main(String[] args) throws IOException {
-
+        updateSchoolImg();
     }
 
 }
