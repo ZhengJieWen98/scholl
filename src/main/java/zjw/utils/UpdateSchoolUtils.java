@@ -864,11 +864,14 @@ public class UpdateSchoolUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(s.equals(""))continue;
-            JSONObject jsonObject = JSONObject.parseObject(s);
-            if("0000".equals(jsonObject.get("code").toString())){
-                List<SchoolImg> data = JSON.parseArray(jsonObject.get("data").toString(), SchoolImg.class);
-                schoolImgService.addSchoolImgList(data);
+
+            System.out.println("school_id:"+school_id+" s:"+s+" !s.equals(\"\"):"+!s.equals("\"\""));
+            if(!"\"\"".equals(s)){
+                JSONObject jsonObject = JSONObject.parseObject(s);
+                if("0000".equals(jsonObject.get("code").toString())){
+                    List<SchoolImg> data = JSON.parseArray(jsonObject.get("data").toString(), SchoolImg.class);
+                    schoolImgService.addSchoolImgList(data);
+                }
             }
         }
     }
