@@ -32,6 +32,7 @@ public class UpdateSchoolUtils {
     private static SchoolMajorLineService schoolMajorLineService = new SchoolMajorLineServiceImp();
     private static ProvinceGaoKaoInfoService provinceGaoKaoInfoService = new ProvinceGaoKaoInfoServiceImp();
     private static SchoolInfoService schoolInfoService = new SchoolInfoServiceImp();
+    private static SchoolIntroduceService schoolIntroduceService = new SchoolIntroduceServiceImp();
     private static Map<String,String> schoolNewsUrlMap = null;
     private static Map<String,String> schoolNewsInfoUrlMap = null;
     private static Map<String,String> schoolMajorUrlMap = null;
@@ -559,6 +560,57 @@ public class UpdateSchoolUtils {
     }
 
     /**
+     * @Title updateSchoolIntroduce
+     * @description 更新高校介绍信息
+     * @author 郑洁文
+     * @date 2022年8月25日 下午14:30
+     */
+    public static void updateSchoolIntroduce(){
+        List<String> allSchoolId = schoolService.findAllSchoolId();
+        //开启线程
+        int size = allSchoolId.size();
+        int pageSize = 5;
+        int countPage =size%pageSize==0?size/pageSize:size/pageSize+1;
+        for(int i=1;i<=countPage;i++){
+            int start = (i-1)*pageSize;
+            int end = i==countPage?size:i*pageSize;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for(int j=start;j<end;j++){
+                        try {
+                            String school_id = allSchoolId.get(j);
+                            updateSchoolIntroduce(school_id);
+                        } catch (IOException e) {
+                            //无法访问,跳过
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * @Title updateSchoolIntroduce
+     * @description 更新高校介绍信息
+     * @author 郑洁文
+     * @date 2022年8月25日 下午14:30
+     */
+    public static void updateSchoolIntroduce(String schoolId) throws IOException {
+        //schoolIntroduceService
+        String url = "https://static-data.gaokao.cn/www/2.0/school/"+schoolId+"/detail/69000.json";
+        String s = MyHttpClient.fetchHtmlSync(url);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        if ("0000".equals(jsonObject.get("code").toString())) {
+            Object data = jsonObject.get("data");
+            SchoolIntroduce schoolIntroduce = JSON.parseObject(data.toString(), SchoolIntroduce.class);
+            schoolIntroduceService.addSchoolIntroduce(schoolIntroduce);
+        }
+    }
+
+    /**
      * @Title analysisSchoolUrl
      * @description 解析高校url地址
      * @author 郑洁文
@@ -877,7 +929,7 @@ public class UpdateSchoolUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        updateSchoolImg();
+        updateSchoolIntroduce();
     }
 
 }
